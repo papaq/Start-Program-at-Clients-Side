@@ -24,5 +24,10 @@ namespace StartProgramBySocketsServer
         {
             InitializeComponent();
         }
+
+        private void buttonStartStopProgram_Click(object sender, RoutedEventArgs e)
+        {
+
+        }
     }
 }
