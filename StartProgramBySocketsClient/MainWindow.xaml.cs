@@ -44,7 +44,11 @@ namespace StartProgramBySocketsClient
                     return;
                 }
             }
-            
+
+            if (_client != null) return;
+
+            button.IsEnabled = false;
+            textBlock.IsEnabled = false;
             _client = new SocketsClient(ipBytes, this);
         }
 

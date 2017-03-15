@@ -51,6 +51,17 @@ namespace StartProgramBySocketsServer
                 // Update comboboxes
                 _clientPrograms = list;
                 comboBoxChooseClient.Items.Clear();
+
+                if (_clientPrograms.Count == 0)
+                {
+                    buttonStartStopProgram.IsEnabled = false;
+                    comboBoxChooseClient.IsEnabled = false;
+                    comboBoxChooseProgram.IsEnabled = false;
+                    return;
+                }
+
+                comboBoxChooseClient.IsEnabled = true;
+
                 foreach (var client in _clientPrograms)
                 {
                     comboBoxChooseClient.Items.Add(client.Name);
@@ -61,10 +72,10 @@ namespace StartProgramBySocketsServer
                     comboBoxChooseClient.SelectedIndex = 0;
                 }
 
-                if (!list.Exists(el => el.Name.Equals(combo1Item))) return;
+                if (!_clientPrograms.Exists(el => el.Name.Equals(combo1Item))) return;
 
                 comboBoxChooseClient.SelectedItem = combo1Item;
-                if (list.Find(el => el.Name.Equals(combo1Item)).ListOfPrograms.Contains(combo2Item))
+                if (_clientPrograms.Find(el => el.Name.Equals(combo1Item)).ListOfPrograms.Contains(combo2Item))
                 {
                     comboBoxChooseProgram.SelectedItem = combo2Item;
                 }
@@ -85,9 +96,10 @@ namespace StartProgramBySocketsServer
 
             if (clientRecord == null)
             {
-                comboBoxChooseProgram.SelectedIndex = -1;
+                comboBoxChooseProgram.Items.Clear();
+                comboBoxChooseProgram.IsEnabled = false;
                 return;
-            };
+            }
 
             comboBoxChooseProgram.Items.Clear();
             foreach (var program in clientRecord.ListOfPrograms)
@@ -96,6 +108,8 @@ namespace StartProgramBySocketsServer
             }
 
             comboBoxChooseProgram.SelectedIndex = 0;
+            comboBoxChooseProgram.IsEnabled = true;
+            buttonStartStopProgram.IsEnabled = true;
         }
 
         public void ShowMessage(string message)
