@@ -12,8 +12,12 @@ namespace StartProgramBySocketsServer
         private const int Port = 28282;
 
         private readonly List<SocketHandler> _listOfHandlers;
+
         private Thread _commissionaire;
+        private Thread _updateClients;
+
         private readonly TcpListener _tcpListener;
+
         private readonly MainWindow _mainWindow;
 
         private bool _work = true;
@@ -36,6 +40,7 @@ namespace StartProgramBySocketsServer
             }
 
             StartCommissionaire();
+            StartUpdater();
         }
 
         private void StartCommissionaire()
@@ -44,12 +49,19 @@ namespace StartProgramBySocketsServer
             _commissionaire.Start();
         }
 
+        private void StartUpdater()
+        {
+            _updateClients = new Thread(UpdateAll);
+            _updateClients.Start();
+        }
+
         public void CloseConnections()
         {
             _work = false;
             _tcpListener?.Stop();
             //_commissionaire?.Abort();
             _commissionaire.Join();
+            _updateClients.Join();
 
             foreach (var handler in _listOfHandlers)
             {
@@ -67,11 +79,38 @@ namespace StartProgramBySocketsServer
         private void UpdateComboboxes()
         {
             var clientProgram = (from handler in _listOfHandlers
-                where handler.ThreadActive
+                //where handler.ThreadActive
                 select new ClientPrograms(handler.Name, handler.GetPrograms())).ToList();
 
 
             _mainWindow.UpdateComboBoxes(clientProgram);
+        }
+
+        private void UpdateAll()
+        {
+            while (_work)
+            {
+
+                // CHECK THREADS IF ACTIVE
+                var i = 0;
+                while (i < _listOfHandlers.Count)
+                {
+                    var handler = _listOfHandlers[i];
+
+                    if (!handler.ThreadActive)
+                    {
+                        _listOfHandlers.RemoveAt(i);
+                        continue;
+                    }
+
+                    i++;
+                }
+
+                // UPDATE COMBOBOXES
+                UpdateComboboxes();
+
+                Thread.Sleep(1000);
+            }
         }
 
         private void ConnectNewSockets()
@@ -93,23 +132,6 @@ namespace StartProgramBySocketsServer
                 _listOfHandlers.Add(passMeNewSocket);
 
                 Thread.Sleep(1000);
-
-
-                // CHECK THREADS IF ACTIVE
-                var i = 0;
-                while (i < _listOfHandlers.Count)
-                {
-                    if (!_listOfHandlers[i].ThreadActive)
-                    {
-                        _listOfHandlers.RemoveAt(i);
-                        continue;
-                    }
-
-                    i++;
-                }
-
-                // UPDATE COMBOBOXES
-                UpdateComboboxes();
             }
         }
     }

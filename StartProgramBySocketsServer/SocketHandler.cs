@@ -100,7 +100,7 @@ namespace StartProgramBySocketsServer
         {
             return _listOfProgramInfo.Find(p => p.ShortName == name)?.Path;
         }
-
+        
         private void UpdateListOfPrograms(List<string> progPaths)
         {
             _listOfProgramInfo.RemoveAll(pr => !progPaths.Exists(path => path == pr.Path));
@@ -130,12 +130,12 @@ namespace StartProgramBySocketsServer
             {
                 _streamHandler = _tcpClient.GetStream();
                 var sr = new StreamReader(_streamHandler);
-                var sw = new StreamWriter(_streamHandler) { AutoFlush = true };
-                
+                var sw = new StreamWriter(_streamHandler) {AutoFlush = true};
+
                 // Get first line
                 var line = sr.ReadLine();
                 if (string.IsNullOrEmpty(line)) return;
-                
+
                 var words = line.Split(';').ToList();
 
                 words.RemoveAll(word => word.Equals(""));
@@ -145,14 +145,15 @@ namespace StartProgramBySocketsServer
 
                 // Set list of programs
                 UpdateListOfPrograms(words.GetRange(1, words.Count - 1));
-                
+
                 // Hold connection
                 while (true)
                 {
-                    
+
                     var programName = GetProgramNameToProcess();
                     if (programName == null)
                     {
+                        sw.WriteLine("idle");
                         Thread.Sleep(1000);
                         continue;
                     }
@@ -160,6 +161,7 @@ namespace StartProgramBySocketsServer
                     var pathToSend = GetProgramPath(programName);
                     if (pathToSend == null)
                     {
+                        sw.WriteLine("idle");
                         Thread.Sleep(1000);
                         continue;
                     }
@@ -167,14 +169,18 @@ namespace StartProgramBySocketsServer
                     // Send path to process
                     sw.WriteLine(pathToSend);
 
-
                     line = sr.ReadLine();
                     if (string.IsNullOrEmpty(line)) return;
-                    
+
                     if (ProcessServiceCode(line)) continue;
 
                     _mainWindow.ShowMessage("Could not execute!");
+
                 }
+            }
+            catch (IOException)
+            {
+                // do nothing
             }
 
             catch (Exception e)

@@ -77,10 +77,17 @@ namespace StartProgramBySocketsClient
 
         public void CloseConnection()
         {
+            if (_streamHandler != null)
+            {
+                var writer = new StreamWriter(_streamHandler) { AutoFlush = true };
+                writer.WriteLine("bad");
+
+                _streamHandler.Close();
+            }
+
             _guestThread?.Abort();
 
             _tcpClient?.Close();
-            _streamHandler?.Close();
 
 
             // Close all programs
@@ -97,7 +104,7 @@ namespace StartProgramBySocketsClient
             }
         }
 
-        private IEnumerable<string> GetListOfPrograms()
+        private static IEnumerable<string> GetListOfPrograms()
         {
             var programPaths = GetAllFiles("*.exe");
             programPaths.AddRange(GetAllFiles("*.jar"));
@@ -127,12 +134,15 @@ namespace StartProgramBySocketsClient
                 try
                 {
                     programInfo.Process.Kill();
-                    _listOfProgramState.Remove(programInfo);
                 }
                 catch (Exception)
                 {
                     _window.ShowMessage("Could not close opened program!");
                     return false;
+                }
+                finally
+                {
+                    _listOfProgramState.Remove(programInfo);
                 }
             }
             else
@@ -181,6 +191,12 @@ namespace StartProgramBySocketsClient
                 if (string.IsNullOrEmpty(line)) return;
 
                 // Received command
+                if (line.Equals("idle"))
+                {
+                    Thread.Sleep(1000);
+                    continue;
+                }
+
                 var result = StartOrStopApplication(line);
                 sw.WriteLine(result ? "ok" : "bad");
             }

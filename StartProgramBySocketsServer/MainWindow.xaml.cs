@@ -8,13 +8,13 @@ namespace StartProgramBySocketsServer
     public partial class MainWindow
     {
         private readonly SocketsServer _server;
-        private List<ClientPrograms> _clientServer;
+        private List<ClientPrograms> _clientPrograms;
 
         public MainWindow()
         {
             InitializeComponent();
 
-            _clientServer = new List<ClientPrograms>();
+            _clientPrograms = new List<ClientPrograms>();
             _server = new SocketsServer(this);
         }
 
@@ -49,9 +49,9 @@ namespace StartProgramBySocketsServer
                 var combo2Item = comboBoxChooseProgram.SelectedItem;
                 
                 // Update comboboxes
-                _clientServer = list;
+                _clientPrograms = list;
                 comboBoxChooseClient.Items.Clear();
-                foreach (var client in _clientServer)
+                foreach (var client in _clientPrograms)
                 {
                     comboBoxChooseClient.Items.Add(client.Name);
                 }
@@ -75,15 +75,19 @@ namespace StartProgramBySocketsServer
             System.Windows.Controls.SelectionChangedEventArgs e)
         {
             var client = comboBoxChooseClient.SelectedItem;
-
+            
             ClientPrograms clientRecord = null;
-            if (_clientServer.Count > 0)
+            if (_clientPrograms.Count > 0)
             {
 
-                clientRecord = _clientServer.Find(cl => cl.Name.Equals(client));
+                clientRecord = _clientPrograms.Find(cl => cl.Name.Equals(client));
             }
 
-            if (clientRecord == null) return;
+            if (clientRecord == null)
+            {
+                comboBoxChooseProgram.SelectedIndex = -1;
+                return;
+            };
 
             comboBoxChooseProgram.Items.Clear();
             foreach (var program in clientRecord.ListOfPrograms)
