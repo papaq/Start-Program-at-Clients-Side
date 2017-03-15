@@ -5,13 +5,13 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:StartProgramBySocketsServer"
         mc:Ignorable="d"
-        Title="Server" Height="350" Width="525">
+        Title="Server" Height="237" Width="351" Closing="Window_Closing" ResizeMode="CanMinimize">
     <Grid>
-        <Label x:Name="label" Content="Client" HorizontalAlignment="Left" Margin="100,63,0,0" VerticalAlignment="Top" RenderTransformOrigin="-3.5,0.308"/>
-        <Label x:Name="label_Copy" Content="Program" HorizontalAlignment="Left" Margin="100,122,0,0" VerticalAlignment="Top" RenderTransformOrigin="-3.5,0.308"/>
-        <Button x:Name="buttonStartStopProgram" Content="Start" HorizontalAlignment="Left" Height="32" Margin="283,234,0,0" VerticalAlignment="Top" Width="107" Click="buttonStartStopProgram_Click"/>
-        <ComboBox x:Name="comboBoxChooseClient" HorizontalAlignment="Left" Margin="283,67,0,0" VerticalAlignment="Top" Width="120"/>
-        <ComboBox x:Name="comboBoxChooseProgram" HorizontalAlignment="Left" Margin="283,126,0,0" VerticalAlignment="Top" Width="120"/>
+        <Label x:Name="label" Content="Client" HorizontalAlignment="Left" Margin="37,32,0,0" VerticalAlignment="Top" RenderTransformOrigin="-3.5,0.308"/>
+        <Label x:Name="label_Copy" Content="Program" HorizontalAlignment="Left" Margin="37,78,0,0" VerticalAlignment="Top" RenderTransformOrigin="-3.5,0.308"/>
+        <Button x:Name="buttonStartStopProgram" Content="Start/Stop" HorizontalAlignment="Left" Height="32" Margin="135,143,0,0" VerticalAlignment="Top" Width="107" Click="buttonStartStopProgram_Click"/>
+        <ComboBox x:Name="comboBoxChooseClient" HorizontalAlignment="Left" Margin="135,36,0,0" VerticalAlignment="Top" Width="152" SelectionChanged="comboBoxChooseClient_SelectionChanged"/>
+        <ComboBox x:Name="comboBoxChooseProgram" HorizontalAlignment="Left" Margin="135,82,0,0" VerticalAlignment="Top" Width="152"/>
 
     </Grid>
 </Window>

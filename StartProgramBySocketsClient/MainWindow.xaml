@@ -1,0 +1,15 @@
+﻿<Window x:Class="StartProgramBySocketsClient.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:StartProgramBySocketsClient"
+        mc:Ignorable="d"
+        Title="Client" Height="158.219" Width="395.548" Closing="Window_Closing" ResizeMode="CanMinimize">
+    <Grid>
+        <Label x:Name="label" Content="Server's ip" HorizontalAlignment="Left" Margin="30,28,0,0" VerticalAlignment="Top"/>
+        <TextBox x:Name="textBlock" HorizontalAlignment="Left" Height="26" Margin="146,27,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="191" Padding="0,3,0,0" FontSize="14" Background="#FFFBFBFB" Text="127.0.0.1"/>
+        <Button x:Name="button" Content="Connect" HorizontalAlignment="Left" Height="35" Margin="146,69,0,0" VerticalAlignment="Top" Width="145" Click="button_Click"/>
+
+    </Grid>
+</Window>

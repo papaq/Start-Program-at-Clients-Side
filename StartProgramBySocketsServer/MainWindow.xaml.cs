@@ -1,33 +1,105 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Controls;
-using System.Windows.Data;
-using System.Windows.Documents;
-using System.Windows.Input;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
-using System.Windows.Navigation;
-using System.Windows.Shapes;
 
 namespace StartProgramBySocketsServer
 {
-    /// <summary>
-    /// Interaction logic for MainWindow.xaml
-    /// </summary>
-    public partial class MainWindow : Window
+
+    public partial class MainWindow
     {
+        private readonly SocketsServer _server;
+        private List<ClientPrograms> _clientServer;
+
         public MainWindow()
         {
             InitializeComponent();
+
+            _clientServer = new List<ClientPrograms>();
+            _server = new SocketsServer(this);
         }
 
         private void buttonStartStopProgram_Click(object sender, RoutedEventArgs e)
         {
+            if (comboBoxChooseClient.SelectedIndex < 0)
+            {
+                MessageBox.Show(this, "Choose client!");
+                return;
+            }
 
+            if (comboBoxChooseProgram.SelectedIndex < 0)
+            {
+                MessageBox.Show(this, "Choose program!");
+                return;
+            }
+
+            _server.SendCommand((string) comboBoxChooseClient.SelectedItem, 
+                (string) comboBoxChooseProgram.SelectedItem);
+        }
+
+        private void Window_Closing(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            _server?.CloseConnections();
+        }
+
+        public void UpdateComboBoxes(List<ClientPrograms> list)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                var combo1Item = comboBoxChooseClient.SelectedItem;
+                var combo2Item = comboBoxChooseProgram.SelectedItem;
+                
+                // Update comboboxes
+                _clientServer = list;
+                comboBoxChooseClient.Items.Clear();
+                foreach (var client in _clientServer)
+                {
+                    comboBoxChooseClient.Items.Add(client.Name);
+                }
+
+                if (combo1Item == null && comboBoxChooseClient.Items.Count > 0)
+                {
+                    comboBoxChooseClient.SelectedIndex = 0;
+                }
+
+                if (!list.Exists(el => el.Name.Equals(combo1Item))) return;
+
+                comboBoxChooseClient.SelectedItem = combo1Item;
+                if (list.Find(el => el.Name.Equals(combo1Item)).ListOfPrograms.Contains(combo2Item))
+                {
+                    comboBoxChooseProgram.SelectedItem = combo2Item;
+                }
+            });
+        }
+
+        private void comboBoxChooseClient_SelectionChanged(object sender,
+            System.Windows.Controls.SelectionChangedEventArgs e)
+        {
+            var client = comboBoxChooseClient.SelectedItem;
+
+            ClientPrograms clientRecord = null;
+            if (_clientServer.Count > 0)
+            {
+
+                clientRecord = _clientServer.Find(cl => cl.Name.Equals(client));
+            }
+
+            if (clientRecord == null) return;
+
+            comboBoxChooseProgram.Items.Clear();
+            foreach (var program in clientRecord.ListOfPrograms)
+            {
+                comboBoxChooseProgram.Items.Add(program);
+            }
+
+            comboBoxChooseProgram.SelectedIndex = 0;
+        }
+
+        public void ShowMessage(string message)
+        {
+            Dispatcher.Invoke(() =>
+            {
+                MessageBox.Show(this, message);
+            });
         }
     }
 }

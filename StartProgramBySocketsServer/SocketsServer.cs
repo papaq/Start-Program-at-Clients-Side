@@ -3,46 +3,127 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace StartProgramBySocketsServer
 {
     internal class SocketsServer
     {
-        private const int PORT = 3324;
+        private const int Port = 28282;
 
-        private List<SocketHandler> _listOfHandlers;
+        private readonly List<SocketHandler> _listOfHandlers;
         private Thread _commissionaire;
-        private TcpListener _tcpListener; 
+        private readonly TcpListener _tcpListener;
+        private readonly MainWindow _mainWindow;
 
-        public SocketsServer()
+        private bool _work = true;
+
+        public SocketsServer(MainWindow window)
         {
+            _mainWindow = window;
             _listOfHandlers = new List<SocketHandler>();
 
-            _tcpListener = new TcpListener(Dns.GetHostAddresses("")[0], PORT);
+            try
+            {
+                //_tcpListener = new TcpListener(Dns.GetHostAddresses("")[0], Port);
+                _tcpListener = new TcpListener(IPAddress.Any, Port);
+                _tcpListener.Start();
+            }
+            catch (Exception e)
+            {
+                window.ShowMessage(e.Message);
+                return;
+            }
+
             StartCommissionaire();
         }
 
         private void StartCommissionaire()
         {
             _commissionaire = new Thread(ConnectNewSockets);
+            _commissionaire.Start();
         }
 
-        public void StopConnections()
+        public void CloseConnections()
         {
-            _commissionaire?.Abort();
+            _work = false;
+            _tcpListener?.Stop();
+            //_commissionaire?.Abort();
+            _commissionaire.Join();
 
             foreach (var handler in _listOfHandlers)
             {
                 // Stop each handler
+                handler.StopWorker();
             }
         }
 
-        private static void ConnectNewSockets()
+        public void SendCommand(string client, string program)
         {
-            
+            var handler = _listOfHandlers.Find(h => h.Name == client);
+            handler?.SetProgramNameToProcess(program);
+        }
+
+        private void UpdateComboboxes()
+        {
+            var clientProgram = (from handler in _listOfHandlers
+                where handler.ThreadActive
+                select new ClientPrograms(handler.Name, handler.GetPrograms())).ToList();
+
+
+            _mainWindow.UpdateComboBoxes(clientProgram);
+        }
+
+        private void ConnectNewSockets()
+        {
+            while (_work)
+            {
+                TcpClient tcpClient;
+
+                try
+                {
+                    tcpClient = _tcpListener.AcceptTcpClient();
+                }
+                catch (Exception)
+                {
+                    return;
+                }
+
+                var passMeNewSocket = new SocketHandler(tcpClient, _mainWindow);
+                _listOfHandlers.Add(passMeNewSocket);
+
+                Thread.Sleep(1000);
+
+
+                // CHECK THREADS IF ACTIVE
+                var i = 0;
+                while (i < _listOfHandlers.Count)
+                {
+                    if (!_listOfHandlers[i].ThreadActive)
+                    {
+                        _listOfHandlers.RemoveAt(i);
+                        continue;
+                    }
+
+                    i++;
+                }
+
+                // UPDATE COMBOBOXES
+                UpdateComboboxes();
+            }
+        }
+    }
+
+    public class ClientPrograms
+    {
+        public string Name { get; private set; }
+
+        public List<string> ListOfPrograms { get; private set; }
+
+        public ClientPrograms(string name, List<string> programs)
+        {
+            Name = name;
+            ListOfPrograms = programs;
         }
     }
 }
